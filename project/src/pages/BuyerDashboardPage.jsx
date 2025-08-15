@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -17,6 +17,7 @@ import {
 import useAuthStore from '../store/authStore';
 import useCartStore from '../store/cartStore';
 import useFavoritesStore from '../store/favoritesStore';
+import { getOrdersByUser } from '../services/orderService';
 
 const BuyerDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -24,65 +25,34 @@ const BuyerDashboardPage = () => {
   const { items } = useCartStore();
   const { favorites } = useFavoritesStore();
 
-  // Mock order data - in a real app, this would come from an API
-  const orders = [
-    {
-      id: 'ORD-001',
-      date: '2025-01-15',
-      status: 'delivered',
-      total: 89.99,
-      items: [
-        {
-          id: '1',
-          name: 'Hand-woven Ceramic Vase',
-          price: 89.99,
-          quantity: 1,
-          image: 'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-          artisan: 'Maria Rodriguez'
-        }
-      ]
-    },
-    {
-      id: 'ORD-002',
-      date: '2025-01-10',
-      status: 'shipped',
-      total: 156.00,
-      items: [
-        {
-          id: '2',
-          name: 'Leather Messenger Bag',
-          price: 156.00,
-          quantity: 1,
-          image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-          artisan: 'James Wilson'
-        }
-      ]
-    },
-    {
-      id: 'ORD-003',
-      date: '2025-01-05',
-      status: 'processing',
-      total: 185.50,
-      items: [
-        {
-          id: '3',
-          name: 'Handmade Wooden Bowl Set',
-          price: 65.50,
-          quantity: 1,
-          image: 'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-          artisan: 'David Chen'
-        },
-        {
-          id: '4',
-          name: 'Silver Statement Necklace',
-          price: 120.00,
-          quantity: 1,
-          image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-          artisan: 'Sarah Johnson'
-        }
-      ]
-    }
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      
+      try {
+        const userOrders = await getOrdersByUser(user.id);
+        setOrders(userOrders);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, [user]);
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">Loading dashboard data...</div>
+      </div>
+    );
+  }
+  // Orders are now fetched from the database using orderService
 
   const getStatusColor = (status) => {
     switch (status) {

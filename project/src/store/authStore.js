@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getUserById, createUser, updateUser } from '../services/userService';
 
 const useAuthStore = create(
   persist(
@@ -12,21 +13,28 @@ const useAuthStore = create(
       login: async (credentials) => {
         set({ loading: true });
         try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // In a real app, you would make an API call to your backend
+          // For now, we'll use the service directly
+          const user = await getUserById(credentials.email);
           
-          const mockUser = {
-            id: '1',
-            name: 'John Artisan',
-            email: credentials.email,
-            role: 'buyer',
-            avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'
-          };
+          if (!user) {
+            set({ loading: false });
+            return { success: false, error: 'Invalid credentials' };
+          }
+          
+          // In a real app, you would verify the password here
+          // For demo purposes, we'll just assume it's correct
           
           set({
-            user: mockUser,
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              avatar: user.avatar
+            },
             isAuthenticated: true,
-            token: 'mock-jwt-token',
+            token: 'jwt-token-would-come-from-backend',
             loading: false
           });
           
@@ -40,21 +48,26 @@ const useAuthStore = create(
       signup: async (userData) => {
         set({ loading: true });
         try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          const mockUser = {
-            id: '1',
+          // In a real app, you would make an API call to your backend
+          // For now, we'll use the service directly
+          const newUser = await createUser({
             name: userData.name,
             email: userData.email,
+            password: userData.password, // In a real app, this would be hashed on the backend
             role: userData.role || 'buyer',
             avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'
-          };
+          });
           
           set({
-            user: mockUser,
+            user: {
+              id: newUser._id,
+              name: newUser.name,
+              email: newUser.email,
+              role: newUser.role,
+              avatar: newUser.avatar
+            },
             isAuthenticated: true,
-            token: 'mock-jwt-token',
+            token: 'jwt-token-would-come-from-backend',
             loading: false
           });
           
@@ -73,10 +86,29 @@ const useAuthStore = create(
         });
       },
 
-      updateProfile: (userData) => {
-        set(state => ({
-          user: { ...state.user, ...userData }
-        }));
+      updateProfile: async (userData) => {
+        try {
+          if (!get().user?.id) return;
+          
+          // In a real app, you would make an API call to your backend
+          // For now, we'll use the service directly
+          const updatedUser = await updateUser(get().user.id, userData);
+          
+          set(state => ({
+            user: { 
+              ...state.user, 
+              ...userData,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              role: updatedUser.role,
+              avatar: updatedUser.avatar
+            }
+          }));
+          
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
       }
     }),
     {

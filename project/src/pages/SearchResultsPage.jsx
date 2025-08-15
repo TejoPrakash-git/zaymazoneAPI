@@ -1,77 +1,40 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, ArrowLeft, Filter } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
+import { getProducts } from '../services/productService';
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const [sortBy, setSortBy] = useState('relevance');
 
-  // Mock products data - in a real app, this would come from an API
-  const allProducts = [
-    {
-      id: '1',
-      name: 'Hand-woven Ceramic Vase',
-      price: 89.99,
-      image: 'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.8,
-      reviews: 124,
-      artisan: 'Maria Rodriguez',
-      category: 'Home Decor'
-    },
-    {
-      id: '2',
-      name: 'Leather Messenger Bag',
-      price: 156.00,
-      image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.9,
-      reviews: 89,
-      artisan: 'James Wilson',
-      category: 'Fashion'
-    },
-    {
-      id: '3',
-      name: 'Handmade Wooden Bowl Set',
-      price: 65.50,
-      image: 'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.7,
-      reviews: 156,
-      artisan: 'David Chen',
-      category: 'Kitchen'
-    },
-    {
-      id: '4',
-      name: 'Silver Statement Necklace',
-      price: 120.00,
-      image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 5.0,
-      reviews: 67,
-      artisan: 'Sarah Johnson',
-      category: 'Jewelry'
-    },
-    {
-      id: '5',
-      name: 'Macrame Wall Hanging',
-      price: 45.00,
-      image: 'https://images.pexels.com/photos/6436544/pexels-photo-6436544.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.6,
-      reviews: 203,
-      artisan: 'Emma Thompson',
-      category: 'Home Decor'
-    },
-    {
-      id: '6',
-      name: 'Ceramic Coffee Mugs',
-      price: 32.99,
-      image: 'https://images.pexels.com/photos/1751959/pexels-photo-1751959.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.5,
-      reviews: 87,
-      artisan: 'Lisa Park',
-      category: 'Kitchen'
-    }
-  ];
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const products = await getProducts({ search: query });
+        setAllProducts(products);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [query]);
+  // Add loading state to the UI
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">Searching for products...</div>
+      </div>
+    );
+  }
 
   // Filter products based on search query
   const searchResults = useMemo(() => {

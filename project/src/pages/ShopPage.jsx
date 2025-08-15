@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Filter, Grid, List, SlidersHorizontal, Search } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
+import { getProducts } from '../services/productService';
 
 const ShopPage = () => {
   const [viewMode, setViewMode] = useState('grid');
@@ -12,90 +13,34 @@ const ShopPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock products data
-  const products = [
-    {
-      id: '1',
-      name: 'Hand-woven Ceramic Vase',
-      price: 89.99,
-      image: 'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.8,
-      reviews: 124,
-      artisan: 'Maria Rodriguez',
-      category: 'home-decor'
-    },
-    {
-      id: '2',
-      name: 'Leather Messenger Bag',
-      price: 156.00,
-      image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.9,
-      reviews: 89,
-      artisan: 'James Wilson',
-      category: 'fashion'
-    },
-    {
-      id: '3',
-      name: 'Handmade Wooden Bowl Set',
-      price: 65.50,
-      image: 'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.7,
-      reviews: 156,
-      artisan: 'David Chen',
-      category: 'kitchen'
-    },
-    {
-      id: '4',
-      name: 'Silver Statement Necklace',
-      price: 120.00,
-      image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 5.0,
-      reviews: 67,
-      artisan: 'Sarah Johnson',
-      category: 'jewelry'
-    },
-    {
-      id: '5',
-      name: 'Macrame Wall Hanging',
-      price: 45.00,
-      image: 'https://images.pexels.com/photos/6436544/pexels-photo-6436544.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.6,
-      reviews: 203,
-      artisan: 'Emma Thompson',
-      category: 'home-decor'
-    },
-    {
-      id: '6',
-      name: 'Handcrafted Wooden Watch',
-      price: 189.99,
-      image: 'https://images.pexels.com/photos/1697214/pexels-photo-1697214.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.8,
-      reviews: 92,
-      artisan: 'Michael Brown',
-      category: 'fashion'
-    },
-    {
-      id: '7',
-      name: 'Ceramic Coffee Mug Set',
-      price: 38.75,
-      image: 'https://images.pexels.com/photos/1751959/pexels-photo-1751959.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.7,
-      reviews: 178,
-      artisan: 'Lisa Park',
-      category: 'kitchen'
-    },
-    {
-      id: '8',
-      name: 'Handwoven Scarf',
-      price: 72.50,
-      image: 'https://images.pexels.com/photos/7945553/pexels-photo-7945553.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.9,
-      reviews: 134,
-      artisan: 'Anna Garcia',
-      category: 'fashion'
-    }
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const filters = {
+          category: filterCategory !== 'all' ? filterCategory : undefined,
+          minPrice: filterPrice[0],
+          maxPrice: filterPrice[1],
+          rating: filterRating > 0 ? filterRating : undefined,
+          search: searchQuery || undefined,
+          sortBy: sortBy
+        };
+        
+        const data = await getProducts(filters);
+        setProducts(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [filterCategory, filterPrice, filterRating, searchQuery, sortBy]);
+
+  // Filtered and sorted products
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'home-decor', label: 'Home Decor' },

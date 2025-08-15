@@ -1,53 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Users, Shield, Heart, Truck, Award } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
+import { getProducts } from '../services/productService';
 
 const HomePage = () => {
-  // Mock featured products
-  const featuredProducts = [
-    {
-      id: '1',
-      name: 'Hand-woven Ceramic Vase',
-      price: 89.99,
-      image: 'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.8,
-      reviews: 124,
-      artisan: 'Maria Rodriguez',
-      category: 'Home Decor'
-    },
-    {
-      id: '2',
-      name: 'Leather Messenger Bag',
-      price: 156.00,
-      image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.9,
-      reviews: 89,
-      artisan: 'James Wilson',
-      category: 'Fashion'
-    },
-    {
-      id: '3',
-      name: 'Handmade Wooden Bowl Set',
-      price: 65.50,
-      image: 'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 4.7,
-      reviews: 156,
-      artisan: 'David Chen',
-      category: 'Kitchen'
-    },
-    {
-      id: '4',
-      name: 'Silver Statement Necklace',
-      price: 120.00,
-      image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      rating: 5.0,
-      reviews: 67,
-      artisan: 'Sarah Johnson',
-      category: 'Jewelry'
-    }
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Get featured products (you can add filters as needed)
+        const products = await getProducts({ sortBy: 'rating' });
+        setFeaturedProducts(products.slice(0, 4)); // Get top 4 products
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
 
   const categories = [
     {

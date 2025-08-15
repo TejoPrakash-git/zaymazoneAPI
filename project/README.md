@@ -1,0 +1,113 @@
+# Zaymazone E-commerce Platform
+
+An artisan marketplace platform built with React, Vite, and MongoDB.
+
+## Features
+
+- User authentication (buyers and sellers)
+- Product browsing and searching
+- Shopping cart functionality
+- Order management
+- Seller dashboard
+- Buyer dashboard
+
+## Project Structure
+
+The project has been reorganized to separate client-side and server-side code:
+
+```
+project/
+├── src/                  # Client-side code
+│   ├── components/       # React components
+│   ├── pages/            # React pages
+│   ├── services/         # API service calls
+│   ├── store/            # State management
+│   └── utils/            # Utility functions
+├── server/               # Server-side code
+│   ├── models/           # Mongoose models
+│   ├── routes/           # Express API routes
+│   ├── utils/            # Server utilities
+│   ├── index.js          # Server entry point
+│   └── package.json      # Server dependencies
+├── package.json          # Client dependencies
+└── server.js            # Script to start both client and server
+```
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (local or Atlas)
+
+### Installation
+
+1. Install client dependencies:
+   ```
+   npm install
+   ```
+
+2. Install server dependencies:
+   ```
+   cd server
+   npm install
+   ```
+
+3. Configure environment variables:
+   - Create a `.env` file in the server directory with the following variables:
+     ```
+     PORT=5000
+     MONGODB_URI=mongodb://localhost:27017/zaymazone
+     ```
+
+### Running the Application
+
+1. Start both client and server with a single command:
+   ```
+   npm run start-all
+   ```
+
+   This will start:
+   - The React client on http://localhost:5173
+   - The Express API server on http://localhost:5000
+
+2. Alternatively, you can start them separately:
+   - Client: `npm run dev`
+   - Server: `cd server && npm start`
+
+## API Endpoints
+
+### Products
+- `GET /api/products` - Get all products with optional filtering
+- `GET /api/products/:id` - Get a product by ID
+- `GET /api/products/artisan/:artisanId` - Get products by artisan
+- `POST /api/products` - Create a new product
+- `PUT /api/products/:id` - Update a product
+- `DELETE /api/products/:id` - Delete a product
+
+### Users
+- `GET /api/users/:id` - Get a user by ID
+- `POST /api/users/login` - Login user
+- `POST /api/users` - Register a new user
+- `PUT /api/users/:id` - Update a user
+
+### Orders
+- `POST /api/orders` - Create a new order
+- `GET /api/orders/:id` - Get an order by ID
+- `GET /api/orders/user/:userId` - Get orders by user
+- `GET /api/orders/seller/:sellerId` - Get orders by seller
+- `GET /api/orders/seller/:sellerId/recent` - Get recent orders by seller
+- `PUT /api/orders/:id/status` - Update order status
+```
+The application will be available at http://localhost:5173
+
+## Environment Variables
+
+- `MONGODB_URI`: MongoDB connection string
+- `JWT_SECRET`: Secret key for JWT authentication
+- `NODE_ENV`: Environment (development, production)
+- `PORT`: Server port (for backend)
+
+## Project Structure
+
+The project has been reorganized to separate client-side and server-side code as described above. The old structure with MongoDB models in the src directory has been removed.

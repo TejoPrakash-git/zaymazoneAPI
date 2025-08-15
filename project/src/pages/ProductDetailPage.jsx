@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Star, 
@@ -15,6 +15,7 @@ import {
 import { toast } from 'react-hot-toast';
 import useCartStore from '../store/cartStore';
 import useFavoritesStore from '../store/favoritesStore';
+import { getProductById } from '../services/productService';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -24,43 +25,58 @@ const ProductDetailPage = () => {
   const { addItem } = useCartStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
 
-  // Mock product data - in a real app, this would come from an API
-  const product = {
-    id: id,
-    name: 'Hand-woven Ceramic Vase',
-    price: 89.99,
-    images: [
-      'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=1',
-      'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=1',
-      'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=1'
-    ],
-    rating: 4.8,
-    reviews: 124,
-    artisan: {
-      name: 'Maria Rodriguez',
-      location: 'Barcelona, Spain',
-      avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      totalSales: 1250,
-      rating: 4.9
-    },
-    category: 'Home Decor',
-    description: 'This beautiful hand-woven ceramic vase showcases traditional Spanish craftsmanship with a modern twist. Each piece is unique, featuring intricate patterns and a glossy finish that catches the light beautifully. Perfect for displaying fresh flowers or as a standalone decorative piece.',
-    features: [
-      'Hand-crafted by skilled artisan Maria Rodriguez',
-      'Made from high-quality ceramic clay',
-      'Unique hand-woven texture pattern',
-      'Waterproof and suitable for fresh flowers',
-      'Dimensions: 12" height x 6" diameter',
-      'Easy to clean and maintain'
-    ],
-    inStock: true,
-    stockQuantity: 15,
-    shippingInfo: {
-      freeShipping: true,
-      estimatedDays: '5-7 business days',
-      returnPolicy: '30-day return policy'
-    }
-  };
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const data = await getProductById(id);
+        if (!data) {
+          setError('Product not found');
+        } else {
+          setProduct(data);
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProduct();
+  }, [id]);
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">Loading product details...</div>
+      </div>
+    );
+  }
+  
+  if (error || !product) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">{error || 'Product not found'}</h2>
+          <button 
+            onClick={() => navigate('/shop')}
+            className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg"
+          >
+            Back to Shop
+          </button>
+        </div>
+      </div>
+    );
+  }
+  'Unique hand-woven texture pattern',
+  'Waterproof and suitable for fresh flowers',
+  'Dimensions: 12" height x 6" diameter',
+  'Easy to clean and maintain'
 
   const isProductFavorite = isFavorite(product.id);
 

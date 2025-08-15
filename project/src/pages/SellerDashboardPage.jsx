@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Plus, 
@@ -15,86 +15,71 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import { getProductsByArtisan } from '../services/productService';
+import { getOrdersBySeller, getRecentOrdersBySeller } from '../services/orderService';
+import { getUserById } from '../services/userService';
 
 const SellerDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { user } = useAuthStore();
 
-  // Mock seller data - in a real app, this would come from an API
-  const sellerStats = {
-    totalProducts: 24,
-    totalSales: 1250,
-    totalRevenue: 45680.50,
-    monthlyGrowth: 15.2,
-    averageRating: 4.8,
-    totalReviews: 892
-  };
-
-  const recentOrders = [
-    {
-      id: 'ORD-001',
-      customerName: 'John Smith',
-      product: 'Hand-woven Ceramic Vase',
-      amount: 89.99,
-      status: 'shipped',
-      date: '2025-01-15'
-    },
-    {
-      id: 'ORD-002',
-      customerName: 'Sarah Johnson',
-      product: 'Leather Messenger Bag',
-      amount: 156.00,
-      status: 'processing',
-      date: '2025-01-14'
-    },
-    {
-      id: 'ORD-003',
-      customerName: 'Mike Chen',
-      product: 'Wooden Bowl Set',
-      amount: 65.50,
-      status: 'delivered',
-      date: '2025-01-13'
-    }
-  ];
-
-  const products = [
-    {
-      id: '1',
-      name: 'Hand-woven Ceramic Vase',
-      price: 89.99,
-      stock: 12,
-      image: 'https://images.pexels.com/photos/1827054/pexels-photo-1827054.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      status: 'active',
-      sales: 124
-    },
-    {
-      id: '2',
-      name: 'Leather Messenger Bag',
-      price: 156.00,
-      stock: 8,
-      image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      status: 'active',
-      sales: 89
-    },
-    {
-      id: '3',
-      name: 'Handmade Wooden Bowl Set',
-      price: 65.50,
-      stock: 0,
-      image: 'https://images.pexels.com/photos/1070945/pexels-photo-1070945.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      status: 'out_of_stock',
-      sales: 156
-    },
-    {
-      id: '4',
-      name: 'Silver Statement Necklace',
-      price: 120.00,
-      stock: 5,
-      image: 'https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
-      status: 'active',
-      sales: 67
-    }
-  ];
+  const [sellerStats, setSellerStats] = useState({
+    totalProducts: 0,
+    totalSales: 0,
+    totalRevenue: 0,
+    monthlyGrowth: 0,
+    averageRating: 0,
+    totalReviews: 0
+  });
+  
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchSellerData = async () => {
+      if (!user || user.role !== 'seller') return;
+      
+      try {
+        // Fetch seller's products
+        const sellerProducts = await getProductsByArtisan(user.id);
+        setProducts(sellerProducts);
+        
+        // Fetch seller's orders
+        const sellerOrders = await getOrdersBySeller(user.id);
+        const recent = await getRecentOrdersBySeller(user.id, 5); // Get 5 most recent orders
+        setRecentOrders(recent);
+        
+        // Calculate stats
+        const totalRevenue = sellerOrders.reduce((sum, order) => sum + order.total, 0);
+        
+        setSellerStats({
+          totalProducts: sellerProducts.length,
+          totalSales: sellerOrders.length,
+          totalRevenue,
+          monthlyGrowth: 0, // This would require historical data comparison
+          averageRating: user.rating || 0,
+          totalReviews: 0 // This would need to be calculated from reviews
+        });
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching seller data:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchSellerData();
+  }, [user]);
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">Loading dashboard data...</div>
+      </div>
+    );
+  }
+  // The recentOrders and products are now fetched from the database
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: TrendingUp },
