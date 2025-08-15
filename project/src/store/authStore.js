@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getUserById, createUser, updateUser } from '../services/userService';
+import { loginUser, registerUser, updateUser } from '../services/userService';
 
 const useAuthStore = create(
   persist(
@@ -13,17 +13,8 @@ const useAuthStore = create(
       login: async (credentials) => {
         set({ loading: true });
         try {
-          // In a real app, you would make an API call to your backend
-          // For now, we'll use the service directly
-          const user = await getUserById(credentials.email);
-          
-          if (!user) {
-            set({ loading: false });
-            return { success: false, error: 'Invalid credentials' };
-          }
-          
-          // In a real app, you would verify the password here
-          // For demo purposes, we'll just assume it's correct
+          // Call the login API endpoint
+          const user = await loginUser(credentials);
           
           set({
             user: {
@@ -34,26 +25,25 @@ const useAuthStore = create(
               avatar: user.avatar
             },
             isAuthenticated: true,
-            token: 'jwt-token-would-come-from-backend',
+            token: user.token,
             loading: false
           });
           
           return { success: true };
         } catch (error) {
           set({ loading: false });
-          return { success: false, error: error.message };
+          return { success: false, error: error.response?.data?.message || error.message };
         }
       },
 
       signup: async (userData) => {
         set({ loading: true });
         try {
-          // In a real app, you would make an API call to your backend
-          // For now, we'll use the service directly
-          const newUser = await createUser({
+          // Call the register API endpoint
+          const newUser = await registerUser({
             name: userData.name,
             email: userData.email,
-            password: userData.password, // In a real app, this would be hashed on the backend
+            password: userData.password,
             role: userData.role || 'buyer',
             avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'
           });
@@ -67,18 +57,21 @@ const useAuthStore = create(
               avatar: newUser.avatar
             },
             isAuthenticated: true,
-            token: 'jwt-token-would-come-from-backend',
+            token: newUser.token,
             loading: false
           });
           
           return { success: true };
         } catch (error) {
           set({ loading: false });
-          return { success: false, error: error.message };
+          return { success: false, error: error.response?.data?.message || error.message };
         }
       },
 
       logout: () => {
+        // Remove token from localStorage
+        localStorage.removeItem('token');
+        
         set({
           user: null,
           isAuthenticated: false,
@@ -90,8 +83,7 @@ const useAuthStore = create(
         try {
           if (!get().user?.id) return;
           
-          // In a real app, you would make an API call to your backend
-          // For now, we'll use the service directly
+          // Call the update user API endpoint
           const updatedUser = await updateUser(get().user.id, userData);
           
           set(state => ({

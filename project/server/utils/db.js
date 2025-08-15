@@ -39,11 +39,10 @@ export async function connectDB() {
 
   try {
     cached.conn = await cached.promise;
+    return cached.conn;
   } catch (e) {
     cached.promise = null;
     console.error('Error connecting to MongoDB:', e);
-    throw e;
+    throw new Error('Failed to connect to MongoDB. Please check your connection string and ensure MongoDB is running.');
   }
-
-  return cached.conn;
 }

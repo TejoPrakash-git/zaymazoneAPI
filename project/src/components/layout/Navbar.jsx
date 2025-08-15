@@ -152,6 +152,14 @@ const Navbar = () => {
                         <Settings className="inline h-4 w-4 mr-2" />
                         Dashboard
                       </Link>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        <User className="inline h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -248,6 +256,13 @@ const Navbar = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Dashboard
+                    </Link>
+                    <Link
+                      to="/profile"
+                      className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-gray-100 rounded-md transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Edit Profile
                     </Link>
                     <button
                       onClick={() => {

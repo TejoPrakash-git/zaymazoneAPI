@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Auth Components
+import ProtectedRoute from './components/ProtectedRoute';
+import RoleBasedRoute from './components/RoleBasedRoute';
+import useAuthCheck from './hooks/useAuthCheck';
 
 // Layout Components
 import Navbar from './components/layout/Navbar';
@@ -18,6 +23,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ProfilePage from './pages/ProfilePage';
 import SellerDashboardPage from './pages/SellerDashboardPage';
 import BuyerDashboardPage from './pages/BuyerDashboardPage';
 
@@ -31,6 +37,9 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Check authentication status on app load
+  useAuthCheck();
+  
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -39,17 +48,30 @@ function App() {
           
           <AnimatePresence mode="wait">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/search" element={<SearchResultsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
-              <Route path="/seller-dashboard" element={<SellerDashboardPage />} />
-              <Route path="/buyer-dashboard" element={<BuyerDashboardPage />} />
+              
+              {/* Protected Routes (require authentication) */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/favorites" element={<FavoritesPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+              
+              {/* Role-based Routes */}
+              <Route element={<RoleBasedRoute allowedRoles={['seller', 'admin']} />}>
+                <Route path="/seller-dashboard" element={<SellerDashboardPage />} />
+              </Route>
+              
+              <Route element={<RoleBasedRoute allowedRoles={['buyer', 'admin']} />}>
+                <Route path="/buyer-dashboard" element={<BuyerDashboardPage />} />
+              </Route>
             </Routes>
           </AnimatePresence>
           

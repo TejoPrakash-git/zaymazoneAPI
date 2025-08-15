@@ -19,7 +19,15 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-connectDB();
+(async () => {
+  try {
+    await connectDB();
+    console.log('Connected to MongoDB database');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    process.exit(1); // Exit if database connection fails
+  }
+})();
 
 // Routes
 app.use('/api/products', productRoutes);

@@ -40,12 +40,14 @@ router.get('/:id', async (req, res) => {
 
 /**
  * @route   GET /api/orders/user/:userId
- * @desc    Get orders by user
+ * @desc    Get orders by user ID
  * @access  Private
  */
 router.get('/user/:userId', async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.params.userId }).sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.params.userId })
+      .sort({ createdAt: -1 });
+    
     res.json(orders);
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -55,13 +57,16 @@ router.get('/user/:userId', async (req, res) => {
 
 /**
  * @route   GET /api/orders/seller/:sellerId
- * @desc    Get orders for a seller
+ * @desc    Get orders by seller ID
  * @access  Private/Seller
  */
 router.get('/seller/:sellerId', async (req, res) => {
   try {
-    // This is a simplified approach. In a real app, you'd need to query orders that contain products from this seller
-    const orders = await Order.find({ 'items.artisan': req.params.sellerId }).sort({ createdAt: -1 });
+    // Find orders where any item has the seller ID as artisan
+    const orders = await Order.find({
+      'orderItems.artisan': req.params.sellerId
+    }).sort({ createdAt: -1 });
+    
     res.json(orders);
   } catch (error) {
     console.error('Error fetching seller orders:', error);
@@ -71,18 +76,23 @@ router.get('/seller/:sellerId', async (req, res) => {
 
 /**
  * @route   GET /api/orders/recent/:sellerId
- * @desc    Get recent orders for a seller
+ * @desc    Get recent orders by seller ID (limited)
  * @access  Private/Seller
  */
 router.get('/recent/:sellerId', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 5;
-    const orders = await Order.find({ 'items.artisan': req.params.sellerId })
+    
+    // Find recent orders where any item has the seller ID as artisan
+    const orders = await Order.find({
+      'orderItems.artisan': req.params.sellerId
+    })
       .sort({ createdAt: -1 })
       .limit(limit);
+    
     res.json(orders);
   } catch (error) {
-    console.error('Error fetching recent orders:', error);
+    console.error('Error fetching recent seller orders:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -98,7 +108,7 @@ router.put('/:id', async (req, res) => {
     
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { status },
+      { status, updatedAt: Date.now() },
       { new: true }
     );
     
@@ -108,7 +118,7 @@ router.put('/:id', async (req, res) => {
     
     res.json(order);
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('Error updating order status:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

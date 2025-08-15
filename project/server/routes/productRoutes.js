@@ -1,6 +1,8 @@
 import express from 'express';
 import Product from '../models/Product.js';
 
+
+
 const router = express.Router();
 
 /**
@@ -12,6 +14,7 @@ router.get('/', async (req, res) => {
   try {
     const { category, minPrice, maxPrice, rating, search, sortBy } = req.query;
     
+    // Use MongoDB
     const query = {};
     
     // Apply filters if provided
@@ -33,6 +36,7 @@ router.get('/', async (req, res) => {
     
     // Get products with applied filters
     const products = await Product.find(query).sort(getSortOption(sortBy));
+    
     res.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -68,6 +72,7 @@ router.get('/:id', async (req, res) => {
 router.get('/artisan/:artisanId', async (req, res) => {
   try {
     const products = await Product.find({ artisanId: req.params.artisanId });
+    
     res.json(products);
   } catch (error) {
     console.error('Error fetching artisan products:', error);
@@ -83,6 +88,7 @@ router.get('/artisan/:artisanId', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const product = await Product.create(req.body);
+    
     res.status(201).json(product);
   } catch (error) {
     console.error('Error creating product:', error);
