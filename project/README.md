@@ -1,6 +1,6 @@
 # Zaymazone E-commerce Platform
 
-An artisan marketplace platform built with React, Vite, and MongoDB.
+An artisan marketplace platform built with React, Vite, and MongoDB. The application has been fully integrated with MongoDB, replacing all mock data with real database interactions.
 
 ## Features
 
@@ -10,6 +10,7 @@ An artisan marketplace platform built with React, Vite, and MongoDB.
 - Order management
 - Seller dashboard
 - Buyer dashboard
+- Full MongoDB integration for persistent data storage
 
 ## Project Structure
 
@@ -38,7 +39,7 @@ project/
 ### Prerequisites
 
 - Node.js (v14 or higher)
-- MongoDB (local or Atlas)
+- MongoDB (local or Atlas) - The application is configured to use a local MongoDB instance by default
 
 ### Installation
 
@@ -60,6 +61,13 @@ project/
      MONGODB_URI=mongodb://localhost:27017/zaymazone
      ```
 
+4. Database Setup:
+   - MongoDB will automatically create the `zaymazone` database when the server first connects
+   - The application uses the following collections:
+     - `users` - Stores user information for both buyers and artisans
+     - `products` - Stores product information
+     - `orders` - Stores order information
+
 ### Running the Application
 
 1. Start both client and server with a single command:
@@ -74,6 +82,21 @@ project/
 2. Alternatively, you can start them separately:
    - Client: `npm run dev`
    - Server: `cd server && npm start`
+
+### Troubleshooting
+
+#### Authentication Issues
+
+If you encounter a `CastError` related to `ObjectId` in the authentication middleware, this is likely because:
+
+- The token format is incorrect - tokens should follow the format `simulated-jwt-token-{validUserId}-{timestamp}` where `{validUserId}` must be a valid MongoDB ObjectId (24-character hex string)
+- The user ID doesn't exist in the database
+- The Authorization header format is incorrect
+
+Ensure that:
+1. Users are properly created in the database before authentication
+2. The token generation logic uses valid MongoDB ObjectIds
+3. The client correctly sends the Authorization header
 
 ## API Endpoints
 
